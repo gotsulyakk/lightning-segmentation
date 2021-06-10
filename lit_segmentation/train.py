@@ -29,19 +29,26 @@ class SegmentationModel(pl.LightningModule):
             self.hparams["optimizer"],
             params=[x for x in self.model.parameters() if x.requires_grad],
         )
-        return optimizer
+
+        scheduler = object_from_dict(
+            self.hparams["scheduler"],
+            optimizer=optimizer
+            )
+
+        self.optimizers = [optimizer]
+
+        return self.optimizers, [scheduler]
+
     
     def training_step(self, train_batch, batch_idx):     
         x, y = train_batch
         y = y.unsqueeze(1)
         
         y_pred = self.forward(x)
-        loss = self.criterion(y_pred, y)
-              
+        loss = self.criterion(y_pred, y)              
         score = self.metric(y_pred, y)
- 
-        logs = {'valid_loss': loss, 'valid_metrics': score}
-    
+
+        logs = {'valid_loss': loss, 'valid_metrics': score}    
         self.log_dict(logs, on_step=True, on_epoch=True, prog_bar=True, logger=True)
         
         return loss
@@ -51,12 +58,10 @@ class SegmentationModel(pl.LightningModule):
         y = y.unsqueeze(1)
         
         y_pred = self.forward(x)
-        loss = self.criterion(y_pred, y)
-        
+        loss = self.criterion(y_pred, y)      
         score = self.metric(y_pred, y)
- 
-        logs = {'valid_loss': loss, 'valid_metrics': score}
-    
+
+        logs = {'valid_loss': loss, 'valid_metrics': score}    
         self.log_dict(logs, on_step=True, on_epoch=True, prog_bar=True, logger=True)
         
         return loss
