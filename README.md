@@ -1,1 +1,1 @@
-# lightning_segmentation
+# lightning-segmentation
