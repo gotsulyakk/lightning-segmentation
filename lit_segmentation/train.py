@@ -1,4 +1,3 @@
-from utils import object_from_dict
 import yaml
 import torch
 import pytorch_lightning as pl
@@ -6,6 +5,7 @@ import segmentation_models_pytorch as smp
 
 from dataloaders import SegmentationDataModule
 import utils
+from utils import object_from_dict
 
 
 class SegmentationModel(pl.LightningModule):   
