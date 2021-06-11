@@ -1,8 +1,11 @@
 import os
 import cv2
 import pytorch_lightning as pl
+import segmentation_models_pytorch as smp
 from torch.utils.data import Dataset, DataLoader
 from sklearn.model_selection import train_test_split
+from albumentations.core.serialization import from_dict
+import utils
 
 
 class SegmentationDataset(Dataset):
@@ -36,13 +39,15 @@ class SegmentationDataModule(pl.LightningDataModule):
     def __init__(
         self,
         hparams,
-        train_augs=None,
-        val_augs=None,
-        test_augs=None
     ):
         super().__init__()
 
         self.hparams = hparams
+
+        self.preprocessing_fn = smp.encoders.get_preprocessing_fn(
+            hparams["model"]["encoder_name"], 
+            hparams["model"]["encoder_weights"]
+    )
         
         self.ids = os.listdir(hparams["data"]["images_dir"])
         self.images_fps = [
@@ -52,9 +57,9 @@ class SegmentationDataModule(pl.LightningDataModule):
             os.path.join(hparams["data"]["masks_dir"], image_id) for image_id in self.ids
             ]
         self.batch_size = hparams["train_parameters"]["batch_size"]
-        self.train_augs = train_augs
-        self.val_augs = val_augs
-        self.test_augs = test_augs
+        self.train_augs = utils.get_training_aug(self.preprocessing_fn)
+        self.val_augs = utils.get_validation_aug(self.preprocessing_fn)
+        self.test_augs = utils.get_validation_aug(self.preprocessing_fn)
         
     def setup(self, stage=None):
         

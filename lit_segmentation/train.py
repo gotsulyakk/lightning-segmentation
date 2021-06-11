@@ -1,11 +1,11 @@
-from utils import object_from_dict
 import yaml
-import torch
+from typing import Dict
+from pathlib import Path
+
 import pytorch_lightning as pl
-import segmentation_models_pytorch as smp
 
 from dataloaders import SegmentationDataModule
-import utils
+from utils import object_from_dict, state_dict_from_disk
 
 
 class SegmentationModel(pl.LightningModule):   
@@ -17,7 +17,16 @@ class SegmentationModel(pl.LightningModule):
 
         self.hparams.update(hparams)
         
-        self.model = object_from_dict(self.hparams["model"])       
+        self.model = object_from_dict(self.hparams["model"])
+        if "resume_from_checkpoint" in self.hparams:
+            corrections: Dict[str, str] = {"model.": ""}
+
+            state_dict = state_dict_from_disk(
+                file_path=self.hparams["resume_from_checkpoint"],
+                rename_in_layers=corrections,
+            )
+            self.model.load_state_dict(state_dict)
+            
         self.criterion = object_from_dict(self.hparams["criterion"])
         self.metric = object_from_dict(self.hparams["metric"])              
         
@@ -49,7 +58,9 @@ class SegmentationModel(pl.LightningModule):
         score = self.metric(y_pred, y)
 
         logs = {'valid_loss': loss, 'valid_metrics': score}    
-        self.log_dict(logs, on_step=True, on_epoch=True, prog_bar=True, logger=True)
+        self.log_dict(
+            logs, on_step=True, on_epoch=True, prog_bar=True, logger=True
+        )
         
         return loss
     
@@ -62,35 +73,32 @@ class SegmentationModel(pl.LightningModule):
         score = self.metric(y_pred, y)
 
         logs = {'valid_loss': loss, 'valid_metrics': score}    
-        self.log_dict(logs, on_step=True, on_epoch=True, prog_bar=True, logger=True)
+        self.log_dict(
+            logs, on_step=True, on_epoch=True, prog_bar=True, logger=True
+        )
         
         return loss
 
 
-if __name__=='__main__':
-
+def main():
     config_path = "configs/config.yaml"
 
     with open(config_path) as f:
         hparams = yaml.load(f, Loader=yaml.SafeLoader)
 
     pl.utilities.seed.seed_everything(hparams["seed"])
+    
+    Path(hparams["checkpoint_callback"]["filepath"]).mkdir(exist_ok=True, parents=True)
 
-    preprocessing_fn = smp.encoders.get_preprocessing_fn(
-        hparams["model"]["encoder_name"], 
-        hparams["model"]["encoder_weights"]
+    data = SegmentationDataModule(hparams)
+    model = SegmentationModel(hparams)
+
+    trainer = object_from_dict(
+        hparams["trainer"],
+        checkpoint_callback=object_from_dict(hparams["checkpoint_callback"])
     )
-
-    data = SegmentationDataModule(
-        hparams=hparams,
-        train_augs=utils.get_training_augmentation(preprocessing_fn),
-        val_augs=utils.get_validation_augmentation(preprocessing_fn),
-        test_augs=utils.get_validation_augmentation(preprocessing_fn)
-    )
-
-    model = SegmentationModel(
-        hparams=hparams
-    )
-
-    trainer = object_from_dict(hparams["trainer"])
     trainer.fit(model, data)
+
+
+if __name__=="__main__":
+    main()

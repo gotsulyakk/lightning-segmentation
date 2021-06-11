@@ -1,4 +1,9 @@
+import re
 import pydoc
+from pathlib import Path
+from typing import Any, Dict, Optional, Union
+
+import torch
 import matplotlib.pyplot as plt
 import albumentations as albu
 from albumentations.pytorch import ToTensorV2 as ToTensor
@@ -14,6 +19,41 @@ def object_from_dict(d, parent=None, **default_kwargs):
         return getattr(parent, object_type)(**kwargs)  # skipcq PTC-W0034
 
     return pydoc.locate(object_type)(**kwargs)
+
+
+def rename_layers(state_dict: Dict[str, Any], rename_in_layers: Dict[str, Any]) -> Dict[str, Any]:
+    result = {}
+    for key, value in state_dict.items():
+        for key_r, value_r in rename_in_layers.items():
+            key = re.sub(key_r, value_r, key)
+
+        result[key] = value
+
+    return result
+
+
+def state_dict_from_disk(
+    file_path: Union[Path, str], rename_in_layers: Optional[Dict[str, Any]] = None
+) -> Dict[str, Any]:
+    """Loads PyTorch checkpoint from disk, optionally renaming layer names.
+    Args:
+        file_path: path to the torch checkpoint.
+        rename_in_layers: {from_name: to_name}
+            ex: {"model.0.": "",
+                 "model.": ""}
+    Returns:
+    """
+    checkpoint = torch.load(file_path, map_location=lambda storage, loc: storage)
+
+    if "state_dict" in checkpoint:
+        state_dict = checkpoint["state_dict"]
+    else:
+        state_dict = checkpoint
+
+    if rename_in_layers is not None:
+        state_dict = rename_layers(state_dict, rename_in_layers)
+
+    return state_dict
 
 
 def visualize(**images):
@@ -33,10 +73,10 @@ def to_tensor(x, **kwargs):
     return x.transpose(2, 0, 1).astype('float32')
 
 
-def get_training_augmentation(preprocessing_fn):
+def get_training_aug(preprocessing_fn):
     train_transform = [
         
-        albu.Resize(224, 224),
+        albu.Resize(512, 512),
         albu.HorizontalFlip(p=0.5),
 
         albu.ShiftScaleRotate(scale_limit=0.5, rotate_limit=0, shift_limit=0.1, p=1, border_mode=0),
@@ -79,10 +119,10 @@ def get_training_augmentation(preprocessing_fn):
     return albu.Compose(train_transform)
 
 
-def get_validation_augmentation(preprocessing_fn):
+def get_validation_aug(preprocessing_fn):
     """Add paddings to make image shape divisible by 32"""
     test_transform = [
-        albu.Resize(224, 224),
+        albu.Resize(512, 512),
         #albu.PadIfNeeded(384, 480),
         albu.Lambda(image=preprocessing_fn),
         albu.Normalize(),
