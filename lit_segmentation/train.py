@@ -5,12 +5,7 @@ from pathlib import Path
 import pytorch_lightning as pl
 
 from dataloaders import SegmentationDataModule
-<<<<<<< HEAD
 from utils import object_from_dict, state_dict_from_disk
-=======
-import utils
-from utils import object_from_dict
->>>>>>> 7937c9d5aa7af571fe881c78788912ee67554df8
 
 
 class SegmentationModel(pl.LightningModule):   
