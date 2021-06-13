@@ -8,7 +8,7 @@ from dataloaders import SegmentationDataModule
 from utils import object_from_dict, state_dict_from_disk
 
 
-class SegmentationModel(pl.LightningModule):   
+class SegmentationPipeline(pl.LightningModule):   
     def __init__(
         self,
         hparams,
@@ -88,16 +88,16 @@ def main():
 
     pl.utilities.seed.seed_everything(hparams["seed"])
     
-    Path(hparams["checkpoint_callback"]["filepath"]).mkdir(exist_ok=True, parents=True)
+    Path(hparams["checkpoint_callback"]["dirpath"]).mkdir(exist_ok=True, parents=True)
 
     data = SegmentationDataModule(hparams)
-    model = SegmentationModel(hparams)
+    model_pipeline = SegmentationPipeline(hparams)
 
     trainer = object_from_dict(
         hparams["trainer"],
-        checkpoint_callback=object_from_dict(hparams["checkpoint_callback"])
+        #checkpoint_callback=object_from_dict(hparams["checkpoint_callback"])
     )
-    trainer.fit(model, data)
+    trainer.fit(model_pipeline, data)
 
 
 if __name__=="__main__":

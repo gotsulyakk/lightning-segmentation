@@ -5,8 +5,8 @@ seed: 42
 num_workers: 8
 
 data:
-  images_dir: data/dataset/images
-  masks_dir: data/dataset/masks
+  images_dir: data/images
+  masks_dir: data/masks
 
   val_split: 0.2
 
@@ -26,20 +26,20 @@ metric:
 
 trainer:
   type: pytorch_lightning.Trainer
-  gpus: 0
+  gpus: 1
   max_epochs: 32
   progress_bar_refresh_rate: 1
   benchmark: True
   precision: 32
   gradient_clip_val: null
   stochastic_weight_avg: True
-  resume_from_checkpoint: lightning_logs/version_5/checkpoints/epoch=30-step=3540.ckpt  
+  #resume_from_checkpoint: lightning_logs/version_5/checkpoints/epoch=30-step=3540.ckpt  
 
 train_parameters:
-  batch_size: 16
+  batch_size: 2
 
 val_parameters:
-  batch_size: 8
+  batch_size: 1
 
 optimizer:
   type: torch.optim.Adam
@@ -52,6 +52,8 @@ scheduler:
 
 checkpoint_callback:
   type: pytorch_lightning.callbacks.ModelCheckpoint
+  dirpath: checkpoints
+  filename: "best_checkpoint"
   monitor: valid_metrics
   verbose: True
   mode: max
