@@ -5,8 +5,11 @@ seed: 42
 num_workers: 8
 
 data:
-  images_dir: data/images
-  masks_dir: data/masks
+  train_images_dir: data/images
+  train_masks_dir: data/masks
+
+  test_images_dir: data/test_images
+  test_masks_dir: data/test_masks
 
   val_split: 0.2
 

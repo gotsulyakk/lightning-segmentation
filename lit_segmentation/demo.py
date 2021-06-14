@@ -31,8 +31,6 @@ def main():
     image = cv2.imread(args.image)
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
-    image_shape = image.shape
-
     with open(args.config) as f:
             hparams = yaml.load(f, Loader=yaml.SafeLoader)
 

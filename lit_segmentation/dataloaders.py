@@ -49,30 +49,36 @@ class SegmentationDataModule(pl.LightningDataModule):
             hparams["model"]["encoder_weights"]
     )
         
-        self.ids = os.listdir(hparams["data"]["images_dir"])
-        self.images_fps = [
-            os.path.join(hparams["data"]["images_dir"], image_id) for image_id in self.ids
+        self.train_ids = os.listdir(hparams["data"]["train_images_dir"])
+        self.test_ids = os.listdir(hparams["data"]["test_images_dir"])
+
+        self.train_images_fps = [
+            os.path.join(hparams["data"]["train_images_dir"], image_id) for image_id in self.train_ids
             ]
-        self.masks_fps = [
-            os.path.join(hparams["data"]["masks_dir"], image_id) for image_id in self.ids
+        self.train_masks_fps = [
+            os.path.join(hparams["data"]["train_masks_dir"], image_id) for image_id in self.train_ids
             ]
+
+        self.test_images_fps = [
+            os.path.join(hparams["data"]["test_images_dir"], image_id) for image_id in self.test_ids
+            ]
+        self.test_masks_fps = [
+            os.path.join(hparams["data"]["test_masks_dir"], image_id) for image_id in self.test_ids
+            ]    
+
         self.batch_size = hparams["train_parameters"]["batch_size"]
         self.train_augs = utils.get_training_aug(self.preprocessing_fn)
         self.val_augs = utils.get_validation_aug(self.preprocessing_fn)
         self.test_augs = utils.get_validation_aug(self.preprocessing_fn)
         
-    def setup(self, stage=None):
-        
-        train_imgs, test_imgs, train_masks, test_masks = train_test_split(
-            self.images_fps, self.masks_fps, test_size=0.1
-            )
+    def setup(self, stage=None):       
         train_imgs, val_imgs, train_masks, val_masks = train_test_split(
-            train_imgs, train_masks, test_size=self.hparams["data"]["val_split"]
+            self.train_images_fps, self.train_masks_fps, test_size=self.hparams["data"]["val_split"]
             )
         
         self.train_data = SegmentationDataset(train_imgs, train_masks, self.train_augs)
         self.val_data = SegmentationDataset(val_imgs, val_masks, self.val_augs)
-        self.test_data = SegmentationDataset(test_imgs, test_masks, self.test_augs)
+        self.test_data = SegmentationDataset(self.test_images_fps, self.test_masks_fps, self.test_augs)
         
     def train_dataloader(self):
         train_loader = DataLoader(
