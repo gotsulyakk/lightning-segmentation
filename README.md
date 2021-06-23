@@ -9,7 +9,7 @@ Clone repo and install requirements
 ```bash
 git clone https://github.com/gotsulyakk/lightning-segmentation.git
 cd lightning-segmentation
-pip install -r requitements.txt
+pip install -r requirements.txt
 
 cd lit-segmentation
 ```
