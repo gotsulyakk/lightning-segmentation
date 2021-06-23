@@ -4,15 +4,10 @@ import torch
 import utils
 import argparse
 import numpy as np
-from pathlib import Path
 from typing import Dict
 from skimage import color
 from skimage import segmentation
-import matplotlib.pyplot as plt
 import segmentation_models_pytorch as smp
-
-from skimage import color
-from skimage import segmentation
 
 
 def parse_args():
