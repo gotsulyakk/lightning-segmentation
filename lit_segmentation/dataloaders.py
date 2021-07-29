@@ -53,17 +53,17 @@ class SegmentationDataModule(pl.LightningDataModule):
 
         self.train_images_fps = [
             os.path.join(hparams["data"]["train_images_dir"], image_id) for image_id in self.train_ids
-            ]
+        ]
         self.train_masks_fps = [
             os.path.join(hparams["data"]["train_masks_dir"], image_id) for image_id in self.train_ids
-            ]
+        ]
 
         self.test_images_fps = [
             os.path.join(hparams["data"]["test_images_dir"], image_id) for image_id in self.test_ids
-            ]
+        ]
         self.test_masks_fps = [
             os.path.join(hparams["data"]["test_masks_dir"], image_id) for image_id in self.test_ids
-            ]    
+        ]    
 
         self.batch_size = hparams["train_parameters"]["batch_size"]
         self.train_augs = utils.get_validation_aug(self.preprocessing_fn)
@@ -73,7 +73,7 @@ class SegmentationDataModule(pl.LightningDataModule):
     def setup(self, stage=None):       
         train_imgs, val_imgs, train_masks, val_masks = train_test_split(
             self.train_images_fps, self.train_masks_fps, test_size=self.hparams["data"]["val_split"]
-            )
+        )
         
         self.train_data = SegmentationDataset(train_imgs, train_masks, self.train_augs)
         self.val_data = SegmentationDataset(val_imgs, val_masks, self.val_augs)
