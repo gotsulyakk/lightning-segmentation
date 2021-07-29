@@ -46,7 +46,7 @@ class SegmentationDataModule(pl.LightningDataModule):
         self.preprocessing_fn = smp.encoders.get_preprocessing_fn(
             hparams["model"]["encoder_name"], 
             hparams["model"]["encoder_weights"]
-    )
+        )
         
         self.train_ids = os.listdir(hparams["data"]["train_images_dir"])
         self.test_ids = os.listdir(hparams["data"]["test_images_dir"])
