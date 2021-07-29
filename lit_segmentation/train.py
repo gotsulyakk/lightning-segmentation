@@ -1,11 +1,17 @@
 import yaml
+import argparse
 from typing import Dict
 from pathlib import Path
-
 import pytorch_lightning as pl
-
 from dataloaders import SegmentationDataModule
 from utils import object_from_dict, state_dict_from_disk
+
+
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-c", "--config", type=str, help="Path to the config", required=True)
+
+    return parser.parse_args()
 
 
 class SegmentationPipeline(pl.LightningModule):   
@@ -81,9 +87,9 @@ class SegmentationPipeline(pl.LightningModule):
 
 
 def main():
-    config_path = "configs/config.yaml"
+    args = parse_args()
 
-    with open(config_path) as f:
+    with open(args["config"]) as f:
         hparams = yaml.load(f, Loader=yaml.SafeLoader)
 
     pl.utilities.seed.seed_everything(hparams["seed"])

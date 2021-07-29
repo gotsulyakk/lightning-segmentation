@@ -41,7 +41,6 @@ class SegmentationDataModule(pl.LightningDataModule):
         hparams,
     ):
         super().__init__()
-
         self.hparams = hparams
 
         self.preprocessing_fn = smp.encoders.get_preprocessing_fn(
@@ -67,7 +66,7 @@ class SegmentationDataModule(pl.LightningDataModule):
             ]    
 
         self.batch_size = hparams["train_parameters"]["batch_size"]
-        self.train_augs = utils.get_training_aug(self.preprocessing_fn)
+        self.train_augs = utils.get_validation_aug(self.preprocessing_fn)
         self.val_augs = utils.get_validation_aug(self.preprocessing_fn)
         self.test_augs = utils.get_validation_aug(self.preprocessing_fn)
         
@@ -84,22 +83,22 @@ class SegmentationDataModule(pl.LightningDataModule):
         train_loader = DataLoader(
             self.train_data,
             batch_size=self.batch_size,
-            num_workers=self.hparams["num_workers"])
-
+            num_workers=self.hparams["num_workers"]
+        )
         return train_loader
         
     def val_dataloader(self):
         val_loader = DataLoader(
             self.val_data,
             batch_size=self.batch_size,
-            num_workers=self.hparams["num_workers"])
-
+            num_workers=self.hparams["num_workers"]
+        )
         return val_loader
     
     def test_dataloder(self):
         test_loader = DataLoader(
             self.test_data,
             batch_size=self.batch_size,
-            num_workers=self.hparams["num_workers"])
-
+            num_workers=self.hparams["num_workers"]
+        )
         return test_loader
