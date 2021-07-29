@@ -48,7 +48,7 @@ class SegmentationPipeline(pl.LightningModule):
         scheduler = object_from_dict(
             self.hparams["scheduler"],
             optimizer=optimizer
-            )
+        )
 
         self.optimizers = [optimizer]
 
